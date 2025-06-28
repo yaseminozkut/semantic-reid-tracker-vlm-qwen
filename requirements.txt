@@ -1,0 +1,28 @@
+# Object detection
+ultralytics==8.1.34      # YOLOv8
+
+# Tracking
+bytetrack==0.3.0         # ByteTrack wrapper
+lap==0.4.0               # For ByteTrack matching
+
+# Vision-language models
+transformers==4.41.0     # For CLIP & MoonDream
+torch>=2.0               # PyTorch backend
+torchvision              # For preprocessing
+
+# LangChain + LLM agent
+langchain==0.2.0
+ollama                   # Mistral via local Ollama server
+
+# Gradio UI
+gradio==4.29.0
+
+# Utilities
+opencv-python==4.10.0.82
+numpy
+scikit-learn             # For cosine similarity
+matplotlib               # Optional: visualizations
+
+# For development
+tqdm                     # Nice progress bars
+rich                     # Pretty print/logs
