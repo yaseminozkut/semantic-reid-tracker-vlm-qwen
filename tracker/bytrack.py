@@ -1,7 +1,6 @@
-# tracker/ultralytics_bytrack.py
+# tracker/bytrack.py
 
 from ultralytics import YOLO
-import cv2
 
 class UltralyticsByteTrack:
     def __init__(self, model_path="yolov8m.pt", tracker_cfg="bytetrack.yaml", persist=True):
