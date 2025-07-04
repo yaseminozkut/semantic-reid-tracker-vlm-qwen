@@ -1,0 +1,26 @@
+# config/config.yaml
+device: cuda
+log_level: info
+save_intermediate: false
+input_video: data/videos/friends4.mp4
+output_video: output/output_tracked.mp4
+
+detection:
+  model_path: yolov8m.pt
+  confidence_threshold: 0.4
+
+tracking:
+  tracker_cfg: bytetrack.yaml
+  persist: true
+
+embedding:
+  model_path: clip_model.pt
+  similarity_threshold: 0.7
+
+description:
+  vlm_model: moondream
+  description_similarity_threshold: 0.6
+
+llm:
+  llm_model: mistral
+  
