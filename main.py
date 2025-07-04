@@ -2,6 +2,7 @@
 
 import cv2
 from src.detection.detector_tracker import UltralyticsByteTrack
+from src.embedding.clip_embedder import ClipEmbedder
 from src.pipeline.graph import pipeline
 import yaml
 from box import Box
@@ -19,6 +20,10 @@ def main():
         model_path=config.detection.model_path,
         tracker_cfg=config.tracking.tracker_cfg,
         persist=config.tracking.persist,
+        device=config.device
+    )
+    embedder = ClipEmbedder(
+        model_path=config.embedding.model_path, 
         device=config.device
     )
 
@@ -44,6 +49,7 @@ def main():
                 "frame_id": frame_id,
                 "frame": frame,
                 "detector": detector,
+                "embedder": embedder,
                 "detections": [],
                 "track_id_to_global_id": {},
                 "output_frame": None,
