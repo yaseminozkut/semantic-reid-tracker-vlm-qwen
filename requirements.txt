@@ -2,7 +2,6 @@
 ultralytics      # YOLOv8
 
 # Tracking
-bytetrack         # ByteTrack wrapper
 lap               # For ByteTrack matching
 
 # Vision-language models
@@ -12,6 +11,7 @@ torchvision              # For preprocessing
 
 # LangChain + LLM agent
 langchain
+langgraph
 ollama                   # Mistral via local Ollama server
 
 # Gradio UI
@@ -26,3 +26,4 @@ matplotlib               # Optional: visualizations
 # For development
 tqdm                     # Nice progress bars
 rich                     # Pretty print/logs
+python-box               # Enable dot notation
