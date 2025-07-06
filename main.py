@@ -3,6 +3,7 @@
 import cv2
 from src.detection.detector_tracker import UltralyticsByteTrack
 from src.embedding.clip_embedder import ClipEmbedder
+from src.memory.memory import PersonMemory
 from src.pipeline.graph import pipeline
 import yaml
 from box import Box
@@ -26,6 +27,7 @@ def main():
         model_path=config.embedding.model_path, 
         device=config.device
     )
+    memory = PersonMemory(similarity_threshold=config.embedding.similarity_threshold)
 
     # --- Video IO ---
     cap = cv2.VideoCapture(video_path)
@@ -52,6 +54,9 @@ def main():
                 "embedder": embedder,
                 "detections": [],
                 "track_id_to_global_id": {},
+                "embeddings": [], 
+                "memory": memory,  
+                "global_ids": [],  
                 "output_frame": None,
             }
 

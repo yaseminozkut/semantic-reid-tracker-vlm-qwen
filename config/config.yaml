@@ -3,7 +3,7 @@ device: cuda
 log_level: info
 save_intermediate: false
 input_video: data/videos/friends4.mp4
-output_video: output/output_tracked.mp4
+output_video: output/output_tracked_embed_matching.mp4
 
 detection:
   model_path: yolov8m.pt
@@ -14,8 +14,8 @@ tracking:
   persist: true
 
 embedding:
-  model_path: clip_model.pt
-  similarity_threshold: 0.7
+  model_path: openai/clip-vit-base-patch16
+  similarity_threshold: 0.8
 
 description:
   vlm_model: moondream

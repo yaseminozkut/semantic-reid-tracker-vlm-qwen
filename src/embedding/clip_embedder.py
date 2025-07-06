@@ -18,4 +18,5 @@ class ClipEmbedder:
         inputs = self.processor(images=image, return_tensors="pt").to(self.device)
         with torch.no_grad():
             outputs = self.model.get_image_features(**inputs)
+            outputs = outputs / outputs.norm(dim=-1, keepdim=True)
         return outputs.cpu().numpy().flatten()
