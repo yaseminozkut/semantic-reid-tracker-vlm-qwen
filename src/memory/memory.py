@@ -38,6 +38,22 @@ class PersonMemory:
             return best_id, best_score
         else:
             return None, best_score
+    
+    def get_all_descriptions(self):
+        """Get all descriptions in memory for LLM comparison."""
+        return {global_id: person_data["description"]
+                for global_id, person_data in self.memory.items()
+                if person_data.get("description")}
+
+    def find_match_by_description(self, new_description, llm_agent):
+        """
+        Use an LLM agent to compare the new description with all existing ones.
+        Returns (matched_id, reasoning) or (None, reasoning).
+        """
+        existing_descriptions = self.get_all_descriptions()
+        if not existing_descriptions:
+            return None, "high", "No existing descriptions in memory."
+        return llm_agent.compare_descriptions(new_description, existing_descriptions)
 
     def get_person(self, global_id):
         """Get person data by global ID."""
