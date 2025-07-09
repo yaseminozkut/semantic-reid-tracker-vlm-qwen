@@ -1,15 +1,15 @@
-# tracker/bytrack.py
+# tracker/detector_tracker.py
 
 from ultralytics import YOLO
+import os
 
 class UltralyticsByteTrack:
-    def __init__(self, model_path="yolov8m.pt", tracker_cfg="bytetrack.yaml", persist=True, device="cuda"):
+    def __init__(self, model_path="yolov8m.pt", tracker_cfg="config/bytetrack.yaml", persist=True, device="cuda"):
         self.model = YOLO(model_path)
         self.tracker_cfg = tracker_cfg
         self.persist = persist
         self.device = device
         self.model.to(self.device)
-
 
     def track_frame(self, frame):
         """
