@@ -2,16 +2,16 @@
 device: cuda
 log_level: info
 save_intermediate: false
-input_video: data/videos/friends4.mp4
-output_video: output/output_tracked_embed_matching.mp4
+input_video: data/videos/airport.mov
+output_video: output/airport_output_tracked_desc_matching.mp4
 
 detection:
   model_path: yolov8m.pt
   confidence_threshold: 0.4
 
 tracking:
-  tracker_cfg: bytetrack.yaml
-  persist: true
+  tracker_cfg: config/bytetrack.yaml
+  persist: True
 
 embedding:
   model_path: openai/clip-vit-base-patch16
@@ -22,5 +22,6 @@ description:
   description_similarity_threshold: 0.6
 
 llm:
-  llm_model: mistral
-  
+  llm_model: Qwen/Qwen2.5-7B-Instruct
+  quant: 4bit            # "4bit" or "fp16"
+  max_new_tokens: 120
