@@ -40,23 +40,23 @@ If several IDs seem plausible, choose the single best match. If none is credible
 
 ## Decision rubric
 1. **Core physical features (highest weight)**  
-   • estimated gender / age range  
-   • body build / height bracket  
-   • skin tone  
-   • hair color / length / style  
-   • permanent marks (tattoos, scars, piercings)
+   • `gender`, `age_group`, `body_type`, `skin_tone`  
+   • `jawline`, `face_shape`, `eyebrow_shape`  
+   • `hair_color`, `hair_tone`, `hair_length`, `hair_style`   
+   • `distinctive_marks` (tattoos, scars, piercings)
 
 2. **Semi-permanent features (medium weight)**  
-   • glasses, beard, moustache  
-   • jewellery that is hard to remove (earrings etc.)
+   • `eyewear`, `facial_hair`
 
 3. **Clothing & accessories (lowest weight but still important)**  
    Clothing can change; use it to break ties but never as the sole reason to link two IDs.
+   • Use `clothes`, `headwear`, `bag`, `gloves`, `footwear`, `accessories` detail to resolve close calls—but never as the sole basis.
 
 4. The word **‘unknown’** acts as a wildcard that matches anything in the other description.
 
-5. If multiple IDs seem plausible, pick the *single* best match; if none reach a reasonable
-   confidence, return **null**.
+5. **Final decision**  
+   • If multiple IDs seem plausible, pick the *single* best match.  
+   • If none reach reasonable confidence, return **`null`**.  
 
 """
 
