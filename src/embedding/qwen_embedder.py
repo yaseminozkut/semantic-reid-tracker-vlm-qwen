@@ -19,7 +19,11 @@ Output *exactly* in this JSON form:
   "gender": "<male|female>",
   "age_group": "<baby|child|teen|adult|senior>",
   "hair_color": "<black|brown|brunette|blonde|red|gray|other>",
+  "hair_tone": "<jet|ebony|ash|chocolate|chestnut|auburn|honey|golden|copper|platinum|other|not_visible>"
   "hair_length": "<bald|buzzcut|very short|short|ear_length|chin_length|shoulder_length|medium|long>",
+  "eyebrow_shape": "<very_thin|thin|thick|arched|straight|not_visible>",
+  "jawline": "<angular|square|rounded|soft|other|not_visible>",
+  "face_shape": "<oval|square|heart|round|not_visible>",
   "hair_style": "<straight|wavy|curly|braided|ponytail|bun|updo|half_up|other>",
   "facial_hair": "<none|mustache|beard|goatee|stubble|moustache_and_beard|other>",
   "eyewear": "<none|prescription_glasses|sunglasses|other>",
