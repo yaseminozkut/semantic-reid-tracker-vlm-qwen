@@ -6,6 +6,17 @@ from src.utils.viz import draw_detections
 import cv2
 from PIL import Image
 import time
+import torch, json
+import re
+
+def extract_json_from_reply(reply):
+    # This regex finds all {...} blocks in the reply
+    matches = list(re.finditer(r'\{.*?\}', reply, re.DOTALL))
+    if matches:
+        # Return the last match (the actual answer)
+        return matches[-1].group(0)
+    else:
+        return None
 
 # You may want to import your detector, but pass it in via state for flexibility
 
@@ -48,7 +59,7 @@ def description_node(state):
     return state
 """
 def description_node(state):
-    moondream = state["moondream"]
+    descriptor = state["descriptor"]
     detections = state["detections"]
     crops = []
     for det in detections:
@@ -65,16 +76,17 @@ def description_node(state):
 
     if valid_crops:
         start = time.time()
-        batch_descriptions = moondream.describe_batch(valid_crops)
+        batch_descriptions = descriptor.describe_batch(valid_crops)
         end = time.time()
         print(f"[Timing] describe_batch took {end - start:.2f} seconds for {len(valid_crops)} crops")
 
         idx = 0
         for i, c in enumerate(crops):
             if c is not None:
-                descriptions[i] = batch_descriptions[idx]
+                description = batch_descriptions[idx]
+                descriptions[i] = extract_json_from_reply(description)
                 if state['frame_id'] <= 1:
-                    print(f"[Frame {state['frame_id']}] Person {i} description: {batch_descriptions[idx]}")
+                    print(f"[Frame {state['frame_id']}] Person {i} description: {descriptions[i]}")
                 idx += 1
 
     state["descriptions"] = descriptions

@@ -17,6 +17,7 @@ accelerate
 bitsandbytes
 sentencepiece
 huggingface-hub
+qwen-vl-utils[decord]
 
 # Gradio UI
 gradio

@@ -4,6 +4,7 @@ from src.detection.detector_tracker import UltralyticsByteTrack
 from src.embedding.clip_embedder import ClipEmbedder
 from src.memory.memory import PersonMemory
 from src.embedding.moondream_embedder import MoonDreamEmbedder
+from src.embedding.qwen_embedder import QwenEmbedder
 from src.agent.orchestration_agent import OrchestrationAgent
 from src.pipeline.graph import pipeline
 import yaml
@@ -29,7 +30,7 @@ def main():
         device=config.device
     )
     memory = PersonMemory(similarity_threshold=config.embedding.similarity_threshold)
-    moondream = MoonDreamEmbedder(device=config.device)
+    descriptor = QwenEmbedder(device_map=config.device)
     orchestrator = OrchestrationAgent(
         model_name = config.llm.llm_model,
         quant      = getattr(config.llm, "quant", "4bit"),
@@ -59,7 +60,7 @@ def main():
                 "frame": frame,
                 "detector": detector,
                 "embedder": embedder,
-                "moondream": moondream,
+                "descriptor": descriptor,
                 "detections": [],
                 "descriptions": [],
                 "description_matcher": orchestrator,
