@@ -1,9 +1,12 @@
 # main.py
+import os
+# Set CUDA device to 2 before importing any CUDA-dependent libraries
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
 import cv2
 from src.detection.detector_tracker import UltralyticsByteTrack
 from src.embedding.clip_embedder import ClipEmbedder
 from src.memory.memory import PersonMemory
-from src.embedding.moondream_embedder import MoonDreamEmbedder
 from src.embedding.qwen_embedder import QwenEmbedder
 from src.agent.orchestration_agent import OrchestrationAgent
 from src.pipeline.graph import pipeline
@@ -11,11 +14,20 @@ import yaml
 from box import Box
 from pathlib import Path
 from tqdm import tqdm
+import torch
 
 with open("config/config.yaml", "r") as f:
     config = Box(yaml.safe_load(f))
 
 def main():
+    # Debug: Print CUDA device information
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    print(f"CUDA device count: {torch.cuda.device_count()}")
+    if torch.cuda.is_available():
+        print(f"Current CUDA device: {torch.cuda.current_device()}")
+        print(f"Device name: {torch.cuda.get_device_name()}")
+    print(f"CUDA_VISIBLE_DEVICES: {os.environ.get('CUDA_VISIBLE_DEVICES', 'Not set')}")
+    
     # --- Setup ---
     video_path = config.input_video
     output_path = config.output_video
@@ -35,6 +47,7 @@ def main():
         model_name = config.llm.llm_model,
         quant      = getattr(config.llm, "quant", "4bit"),
         max_new_tokens = getattr(config.llm, "max_new_tokens", 120),
+        device_map = getattr(config.llm, "device_map", "auto"),
     )
 
     # --- Video IO ---
@@ -67,8 +80,8 @@ def main():
                 "embeddings": [], 
                 "memory": memory,  
                 "global_ids": [],  
-                "reasoning_logs": [],
                 "output_frame": None,
+                "frame_matching_details": []
             }
 
             # --- Run Pipeline ---
@@ -76,10 +89,9 @@ def main():
             out.write(result_state["output_frame"])
 
             # Print current memory after processing this frame
-            if frame_id <= 1:
-                print("Current memory:")
-                for gid, person in memory.memory.items():
-                    print(f"ID {gid}: {person['description']}")
+            print("Current memory:")
+            for gid, person in memory.memory.items():
+                print(f"ID {gid}: {person['description']}")
 
 
             frame_id += 1
