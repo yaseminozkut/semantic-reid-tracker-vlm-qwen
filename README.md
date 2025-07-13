@@ -31,19 +31,7 @@ Traditional person re-identification relies on specialized embedding networks an
 
 ---
 
-## 📦 Installation
-
-```bash
-git clone https://github.com/yaseminozkut/semantic-reid-tracker-vlm-qwen.git
-cd semantic-reid-tracker-vlm-qwen
-conda create -n semantic-reid-env python=3.10 -y
-conda activate semantic-reid-env
-pip install -r requirements.txt
-```
-
----
-
-## 🏗 Architecture
+## 🏗 Pipeline Architecture
 
 ```text
 Video File
@@ -65,6 +53,14 @@ Memory Matcher
    ▼
 Global ID Assignment
 ```
+---
+
+## 🎬 Demo
+
+Here’s a short clip showing the pipeline in action:
+
+https://github.com/user-attachments/assets/ddbd9552-fd17-4655-a60d-cb32d9fa3e51
+
 
 ---
 
@@ -418,6 +414,18 @@ Global ID Assignment
 ```
 --- 
 
+## 📦 Installation
+
+```bash
+git clone https://github.com/yaseminozkut/semantic-reid-tracker-vlm-qwen.git
+cd semantic-reid-tracker-vlm-qwen
+conda create -n semantic-reid-env python=3.10 -y
+conda activate semantic-reid-env
+pip install -r requirements.txt
+```
+
+---
+
 ## ⚠️ Limitations
 
 - **High Latency:** Per-frame VLM + LLM calls are slow (the unoptimized pipeline can take ~1 hr for a 10 s clip. Even after batching and tracklet summarization, real-time performance remains challenging)
@@ -425,264 +433,11 @@ Global ID Assignment
 - **Occlusion & Pose Variation:** When people are partially occluded or appear in dramatically different poses, generated attributes may change or become “unknown,” breaking continuity.
 - **Prompt Sensitivity:** Small changes in prompt phrasing can yield inconsistent attribute outputs. Requires careful prompt engineering and validation.
 - **Memory Growth:** Storing every unique description over long videos can bloat the “memory” file. You may need periodic pruning or clustering to keep it manageable.
+- **Solutions:** Can perform prompt tuning or add constraints
 ---
 
 ## 🔮 Future Work
 
-- **Hybrid Embedding + Semantic:** Fuse CLIP-style embeddings with language descriptions.
-
-- **Appearance-change Detection:** Only re-describe when an appearance shift is detected.
-
-- **On-device Inference:** Explore smaller, open-source VLM/LLM for edge deployment.
-
-- **User-guided ReID:** Interactive correction loop to refine memory entries in real time.
-
-## 🧠 Example Memory & Reasoning
-
-<details>
-<summary>Click to expand the full final memory store (IDs 0–12)</summary>
-
-```json
-[
-  {
-    "id": 0,
-    "gender": "male",
-    "age_group": "adult",
-    "hair_color": "black",
-    "hair_tone": "jet",
-    "hair_length": "short",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "square",
-    "hair_style": "straight",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "fair",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "black long-sleeve shirt over a blue dress shirt",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none; not visible",
-    "headwear": "none",
-    "accessories": "none"
-  },
-  {
-    "id": 1,
-    "gender": "female",
-    "age_group": "adult",
-    "hair_color": "brown",
-    "hair_tone": "chocolate",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "oval",
-    "hair_style": "updo",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "medium",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "a brown patterned sweater over a white shirt, paired with white pants",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none; not_visible",
-    "headwear": "none; not_visible",
-    "accessories": "a necklace with a red pendant, a watch on her left wrist"
-  },
-  {
-    "id": 2,
-    "gender": "female",
-    "age_group": "adult",
-    "hair_color": "black",
-    "hair_tone": "jet",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "oval",
-    "hair_style": "bun",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "medium",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "a brown plaid shirt with a V-neckline, buttoned up to the chest, and a necklace with a small pendant.",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none",
-    "headwear": "none",
-    "accessories": "earrings"
-  },
-  {
-    "id": 3,
-    "gender": "male",
-    "age_group": "adult",
-    "hair_color": "brown",
-    "hair_tone": "jet",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "square",
-    "hair_style": "straight",
-    "facial_hair": "none",
-    "eyewear": "prescription_glasses",
-    "skin_tone": "fair",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "black velvet coat with multiple buttons, long sleeves, and a high collar",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none; not_visible",
-    "headwear": "none",
-    "accessories": "none"
-  },
-  {
-    "id": 4,
-    "gender": "female",
-    "age_group": "adult",
-    "hair_color": "blonde",
-    "hair_tone": "honey",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "oval",
-    "hair_style": "straight",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "fair",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "a black dress with a floral pattern, loose fit",
-    "bag": "handbag;black",
-    "gloves": "none",
-    "footwear": "sneakers;black",
-    "headwear": "none",
-    "accessories": "none"
-  },
-  {
-    "id": 5,
-    "gender": "female",
-    "age_group": "adult",
-    "hair_color": "black",
-    "hair_tone": "jet",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "oval",
-    "hair_style": "ponytail",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "medium",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "a patterned blouse with a deep V-neckline, featuring a mix of earthy tones like brown, orange, and red, with a subtle texture that suggests a woven or knit material.",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none",
-    "headwear": "none",
-    "accessories": "a necklace with a small pendant, earrings, and a bracelet."
-  },
-  {
-    "id": 6,
-    "gender": "male",
-    "age_group": "adult",
-    "hair_color": "brown",
-    "hair_tone": "chocolate",
-    "hair_length": "short",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "square",
-    "hair_style": "wavy",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "medium",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "black jacket with blue collar",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none",
-    "headwear": "none",
-    "accessories": "none"
-  },
-  {
-    "id": 7,
-    "gender": "male",
-    "age_group": "adult",
-    "hair_color": "brown",
-    "hair_tone": "jet",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "oval",
-    "hair_style": "straight",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "fair",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "black button-up shirt, black pants",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none; not_visible",
-    "headwear": "none",
-    "accessories": "none"
-  },
-  {
-    "id": 8,
-    "gender": "female",
-    "age_group": "adult",
-    "hair_color": "brown",
-    "hair_tone": "chocolate",
-    "hair_length": "short",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "round",
-    "hair_style": "bun",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "medium",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "a brown plaid shirt with a ruffled collar and buttons down the front",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none; not visible",
-    "headwear": "none; not visible",
-    "accessories": "a pearl necklace with a small pendant"
-  },
-  {
-    "id": 9,
-    "gender": "male",
-    "age_group": "adult",
-    "hair_color": "brown",
-    "hair_tone": "chocolate",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "jawline": "rounded",
-    "face_shape": "oval",
-    "hair_style": "straight",
-    "facial_hair": "none",
-    "eyewear": "none",
-    "skin_tone": "medium",
-    "body_type": "average",
-    "distinctive_marks": "none",
-    "clothes": "a black sweater vest over a light blue button-up shirt, paired with dark pants",
-    "bag": "none",
-    "gloves": "none",
-    "footwear": "none; brown",
-    "headwear": "none",
-    "accessories": "none"
-  },
-  {
-    "id": 10,
-    "gender": "female",
-    "age_group": "adult",
-    "hair_color": "blonde",
-    "hair_tone": "golden",
-    "hair_length": "shoulder_length",
-    "eyebrow_shape": "thick",
-    "ja
-
-
-
+- **Hybrid Embedding + Semantic:** Fuse CLIP-style embeddings with language descriptions
+- **Faster Inference:** Explore smaller, open-source VLM/LLM
+- **Merge IDs:** Merge IDs in the memory if they are very likely to be the same person
