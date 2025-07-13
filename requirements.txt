@@ -11,8 +11,13 @@ torchvision              # For preprocessing
 
 # LangChain + LLM agent
 langchain
+langchain-community
 langgraph
-ollama                   # Mistral via local Ollama server
+accelerate 
+bitsandbytes
+sentencepiece
+huggingface-hub
+qwen-vl-utils[decord]
 
 # Gradio UI
 gradio
@@ -22,6 +27,7 @@ opencv-python
 numpy
 scikit-learn             # For cosine similarity
 matplotlib               # Optional: visualizations
+Pillow
 
 # For development
 tqdm                     # Nice progress bars
