@@ -61,7 +61,7 @@ If several IDs seem plausible, choose the single best match. If none is credible
 """
 
 class OrchestrationAgent:
-    def __init__(self, model_name="Qwen/Qwen2.5-7B-Instruct", quant="4bit", max_new_tokens=120):
+    def __init__(self, model_name="Qwen/Qwen2.5-7B-Instruct", quant="4bit", max_new_tokens=120, device_map="auto"):
         if quant == "4bit":
             bnb_cfg = BitsAndBytesConfig(
                 load_in_4bit=True,
@@ -73,7 +73,7 @@ class OrchestrationAgent:
 
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            device_map="auto",          # spreads across visible GPUs / CPU
+            device_map=device_map,       # Use specified device_map instead of "auto"
             torch_dtype="auto",
             trust_remote_code=True,
             quantization_config=bnb_cfg,
