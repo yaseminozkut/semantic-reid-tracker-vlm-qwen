@@ -8,6 +8,28 @@ from PIL import Image
 import time
 import torch, json
 import re
+import numpy as np
+
+def wrap_text(text, font, font_scale, thickness, max_width):
+    """
+    Break `text` into a list of lines, none of which (in pixels) exceed max_width
+    when rendered with cv2.putText(font, font_scale, thickness).
+    """
+    words = text.split()
+    lines = []
+    current = ""
+    for w in words:
+        test = current + (" " if current else "") + w
+        (tw, _), _ = cv2.getTextSize(test, font, font_scale, thickness)
+        if tw <= max_width:
+            current = test
+        else:
+            if current:
+                lines.append(current)
+            current = w
+    if current:
+        lines.append(current)
+    return lines
 
 def extract_json_from_reply(reply):
     # This regex finds all {...} blocks in the reply
@@ -43,21 +65,7 @@ def embedding_node(state):
     state["embeddings"] = embeddings
     print(f"Frame {state['frame_id']}: {len(embeddings)} embeddings, shapes: {[e.shape for e in embeddings]}")
     return state
-"""   
-def description_node(state):
-    moondream = state["moondream"]
-    descriptions = []
-    for det in state["detections"]:
-        crop = det["crop"]
-        if crop is not None and crop.shape[0] > 10 and crop.shape[1] > 10:
-            pil_crop = Image.fromarray(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
-            description = moondream.describe(pil_crop)
-            descriptions.append(description)
-        else:
-            descriptions.append("[Invalid crop]")
-    state["descriptions"] = descriptions
-    return state
-"""
+
 def description_node(state):
     descriptor = state["descriptor"]
     detections = state["detections"]
@@ -85,8 +93,7 @@ def description_node(state):
             if c is not None:
                 description = batch_descriptions[idx]
                 descriptions[i] = extract_json_from_reply(description)
-                if state['frame_id'] <= 1:
-                    print(f"[Frame {state['frame_id']}] Person {i} description: {descriptions[i]}")
+                print(f"[Frame {state['frame_id']}] Person {i} description: {descriptions[i]}")
                 idx += 1
 
     state["descriptions"] = descriptions
@@ -119,9 +126,8 @@ def id_assignment_description_node(state):
     memory = state["memory"]
     matcher = state["description_matcher"]
     descriptions = state["descriptions"]
+    frame_matching_details = state["frame_matching_details"]
     global_ids = []
-    confidences = []
-    reasoning_logs = []
 
     for i, description in enumerate(descriptions):
         start = time.time()
@@ -131,45 +137,124 @@ def id_assignment_description_node(state):
         print(matched_id, confidence, reasoning)
         if matched_id is not None:
             global_ids.append(matched_id)
-            if state['frame_id'] <= 1:
-                print(f"[Frame {state['frame_id']}] Person {i} LLM match: {matched_id}, confidence: {confidence}, reasoning: {reasoning}")
+            frame_matching_details.append([matched_id, matched_id, confidence, reasoning])
+            print(f"[Frame {state['frame_id']}] Person {i} LLM match: {matched_id}, confidence: {confidence}, reasoning: {reasoning}")
         else:
             new_id = memory.add_person(embedding=None, description=description)
             global_ids.append(new_id)
-            if state['frame_id'] <= 1:
-                print(f"Frame {state['frame_id']}: Added new person with global ID {new_id}")
-        confidences.append(confidence)
-        reasoning_logs.append(reasoning)
+            frame_matching_details.append([new_id, matched_id, confidence, reasoning])
+            print(f"Frame {state['frame_id']}: Added new person with global ID {new_id}")
     state["global_ids"] = global_ids
-    state["confidences"] = confidences
-    state["reasoning_logs"] = reasoning_logs
     return state
-
-def output_node(state):
-    """
-    Draws detections and global IDs on the frame.
-    """
-    frame = state["frame"].copy()
-    detections = state["detections"]
-    global_ids = state["global_ids"]
-    confidences = state.get("confidences", [])
-    reasonings = state.get("reasoning_logs", [])
-
-    # Draw global IDs on the frame
-    for i, (det, gid) in enumerate(zip(detections, global_ids)):
-        x1, y1, x2, y2 = det["bbox"]
-        label = f"GlobalID:{gid}"
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        # Draw confidence and reasoning
-        if i < len(confidences):
-            cv2.putText(frame, f"Conf: {confidences[i]}", (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 200, 0), 1)
-        if i < len(reasonings):
-            # Optionally truncate reasoning to fit
-            short_reason = reasonings[i][:50]
-            cv2.putText(frame, short_reason, (x1, y2 + 40), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 200, 255), 1)
     
-    state["output_frame"] = frame
+"""
+def output_node(state):
+    frame = state["frame"].copy()
+    detections    = state["detections"]
+    global_ids    = state["global_ids"]
+    details       = state["frame_matching_details"]  
+    interval = 30
+    # details should be a list of (gid, confidence, reasoning)
+
+    h, w, _      = frame.shape
+    panel_w      = 300
+    fps_panel_bg = 30
+
+    # 1) draw boxes & IDs on the frame
+    for det, gid in zip(detections, global_ids):
+        x1, y1, x2, y2 = det["bbox"]
+        cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,0), 2)
+        cv2.putText(frame, f"ID:{gid}", (x1, y1-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
+
+    rebuild = False
+    if state["frame_id"] % interval == 0 or details != state.get("last_details"):
+        rebuild = True
+
+    # 2) build the right-hand panel
+    panel = np.zeros((h, panel_w, 3), dtype=np.uint8) + fps_panel_bg
+    
+    if rebuild:
+        y     = 20
+        dy    = 20
+        max_text_width = panel_w - 40
+
+        for entry in details:
+            gid = entry[0]
+            matched = entry[1]
+            confidence = entry[2]
+            reasoning = entry[3]
+            # header line
+            cv2.putText(panel, f"GlobalID: {gid}",
+                        (10, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+            y += dy
+
+            # matched_id
+            line = f"matched_id: {matched}"
+            for sub in wrap_text(line,
+                                font=cv2.FONT_HERSHEY_SIMPLEX,
+                                font_scale=0.5,
+                                thickness=1,
+                                max_width=max_text_width):
+                cv2.putText(panel, sub, (20, y),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+                y += dy
+
+            # confidence
+            line = f"conf: {confidence}"
+            for sub in wrap_text(line,
+                                font=cv2.FONT_HERSHEY_SIMPLEX,
+                                font_scale=0.5,
+                                thickness=1,
+                                max_width=max_text_width):
+                cv2.putText(panel, sub, (20, y),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+                y += dy
+
+            # reasoning
+            line = f"reason: {reasoning}"
+            for sub in wrap_text(line,
+                                font=cv2.FONT_HERSHEY_SIMPLEX,
+                                font_scale=0.5,
+                                thickness=1,
+                                max_width=max_text_width):
+                cv2.putText(panel, sub, (20, y),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+                y += dy
+
+            # gap before next entry
+            y += dy
+
+            # if we run out of vertical space, break early
+            if y > h - dy:
+                break
+
+    # 3) stitch left + right and store
+    combined = cv2.hconcat([frame, panel])
+    state["output_frame"] = combined
+
+    # reset or reinitialize details if needed downstream
+    state["frame_matching_details"] = []
+    return state
+"""
+def output_node(state):
+    frame      = state["frame"].copy()
+    detections = state.get("detections", [])
+    global_ids = state.get("global_ids", [])
+
+    for det, gid in zip(detections, global_ids):
+        x1, y1, x2, y2 = det["bbox"]
+        label          = f"GlobalID:{gid}"
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0,255,0), 2)
+        text_y = max(0, y1 - 10)
+        cv2.putText(
+            frame, label, (x1, text_y),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2
+        )
+
+    state["output_frame"]           = frame
+    state["frame_matching_details"] = []    # clear safely as a list
     return state
 
 # Build the LangGraph
