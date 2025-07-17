@@ -43,7 +43,7 @@ Output *exactly* in this JSON form:
 class QwenEmbedder:
     def __init__(self, model_id = "Qwen/Qwen2.5-VL-3B-Instruct",
                  torch_dtype = torch.bfloat16, attn_implementation="flash_attention_2",
-                 device_map = "cuda"):
+                 device_map = "cuda", prompt=prompt):
         """
         Vision-language embedder using Qwen2.5-VL-3B-Instruct.
         Requires `pip install qwen-vl-utils[decord]` and recent `transformers`.
@@ -58,8 +58,9 @@ class QwenEmbedder:
         # Processor handles tokenization (via its built‑in tokenizer), decoding, and vision preprocessing; no separate tokenizer needed
         self.processor = AutoProcessor.from_pretrained(model_id)
         self.device=device_map
+        self.prompt=prompt
 
-    def describe(self, pil_img, prompt=prompt, max_new_tokens=256):
+    def describe(self, pil_img, prompt=self.prompt, max_new_tokens=256):
         """
         Describe a single PIL image given a text prompt.
         """
@@ -97,7 +98,7 @@ class QwenEmbedder:
         return answer.strip()
 
 
-    def describe_batch(self, pil_imgs, prompt=prompt, max_new_tokens=256):
+    def describe_batch(self, pil_imgs, prompt=self.prompt, max_new_tokens=256):
         """
         Describe a batch of PIL images with the same prompt.
         """

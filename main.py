@@ -15,8 +15,13 @@ from box import Box
 from pathlib import Path
 from tqdm import tqdm
 import torch
+import argparse
 
-with open("config/config.yaml", "r") as f:
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', type=str, default='config/friends_config.yaml', help='Path to config file')
+args = parser.parse_args()
+
+with open("config/friends_config.yaml", "r") as f:
     config = Box(yaml.safe_load(f))
 
 def main():
@@ -42,7 +47,7 @@ def main():
         device=config.device
     )
     memory = PersonMemory(similarity_threshold=config.embedding.similarity_threshold)
-    descriptor = QwenEmbedder(device_map=config.device)
+    descriptor = QwenEmbedder(model_id=config.description.vlm_model, device_map=config.device, prompt=config.description.prompt)
     orchestrator = OrchestrationAgent(
         model_name = config.llm.llm_model,
         quant      = getattr(config.llm, "quant", "4bit"),

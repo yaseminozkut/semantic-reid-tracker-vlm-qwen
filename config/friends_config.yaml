@@ -1,0 +1,60 @@
+# config/config.yaml
+device: cuda
+log_level: info
+save_intermediate: false
+input_video: data/videos/friends4_trimmed.mp4
+output_video: output/friends4_trimmed_output_tracked_desc_matching2.mp4
+
+detection:
+  model_path: yolov8m.pt
+  confidence_threshold: 0.45
+
+tracking:
+  tracker_cfg: config/bytetrack.yaml
+  persist: True
+
+description:
+  vlm_model: Qwen/Qwen2.5-VL-3B-Instruct
+  description_similarity_threshold: 0.6
+  prompt: |
+  
+    You are a vision-language assistant. You will be shown an image of a person and asked to fill in attributes.  
+    – Answer with *only* the values (no extra words, no punctuation beyond JSON syntax).  
+    – If you can’t see an attribute to reason, reply “not_visible”; if it’s unclear, reply “unknown”; if you can see the attribute but it’s simply absent, reply "none".  
+    – Conform *exactly* to the JSON form below.
+    - For clothes field, answer very descriptively
+
+    - For bag and footwear field, output exactly four values **in this order**:
+        1. type  
+        2. color  
+      and separate them with semicolons (`;`).
+
+    Output *exactly* in this JSON form:
+    {
+      "gender": "<male|female>",
+      "age_group": "<baby|child|teen|adult|senior>",
+      "hair_color": "<black|brown|brunette|blonde|red|gray|other>",
+      "hair_tone": "<jet|ebony|ash|chocolate|chestnut|auburn|honey|golden|copper|platinum|other|not_visible>"
+      "hair_length": "<bald|buzzcut|very short|short|ear_length|chin_length|shoulder_length|medium|long>",
+      "eyebrow_shape": "<very_thin|thin|thick|arched|straight|not_visible>",
+      "jawline": "<angular|square|rounded|soft|other|not_visible>",
+      "face_shape": "<oval|square|heart|round|not_visible>",
+      "hair_style": "<straight|wavy|curly|braided|ponytail|bun|updo|half_up|other>",
+      "facial_hair": "<none|mustache|beard|goatee|stubble|moustache_and_beard|other>",
+      "eyewear": "<none|prescription_glasses|sunglasses|other>",
+      "skin_tone": "<very_fair|fair|light|medium|olive|tan|brown|dark|other>",
+      "body_type": "<underweight|slim|average|athletic|overweight|obese|other>",
+      "distinctive_marks": "<any valid description e.g. 'tattoo on left forearm', 'scar on right cheek', 'birthmark on neck', 'none'>",
+      "clothes": "<describe person's clothes with type, color, pattern, fit information>
+      "bag": "<any valid bag type>;<any valid color>",
+      "gloves": "<none|gloves|fingerless_gloves|other>",
+      "footwear": "<none|sneakers|boots|sandals|heels|flats|loafers|other>;<any valid color>",
+      "headwear": "<none|hat|cap|beanie|hood|helmet|other>;<any valid color>",
+      "accessories": "<comma-separated list of all visible accessories or 'none'>"
+    }
+
+llm:
+  llm_model: Qwen/Qwen2.5-7B-Instruct
+  quant: 4bit            # "4bit" or "fp16"
+  max_new_tokens: 120
+  device_map: "auto"     # Use auto since CUDA_VISIBLE_DEVICES handles device selection
